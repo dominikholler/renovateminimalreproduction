@@ -2,7 +2,7 @@ module github.com/dominikholler/renovateminimalreproduction
 
 go 1.22.0
 
-require github.com/openshift/library-go v0.0.0-20240711192904-190fec8c3f09
+require github.com/openshift/library-go v0.0.0-20250115130726-99ccd53a90da
 
 require (
 	github.com/go-logr/logr v1.4.2 // indirect

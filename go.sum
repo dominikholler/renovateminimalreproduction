@@ -16,6 +16,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/openshift/library-go v0.0.0-20240711192904-190fec8c3f09 h1:2Ed1mxJTRFpbHIynxkuIyADeWdtyQ6NEZkTaf0wG39M=
 github.com/openshift/library-go v0.0.0-20240711192904-190fec8c3f09/go.mod h1:lFwyRj0XjUf25Da3Q00y+KuaxCWTJ6YzYPDX1+96nco=
+github.com/openshift/library-go v0.0.0-20250115130726-99ccd53a90da h1:9beeng8326189jmchDOTNmA7uO165VzrkNotogAlKqc=
+github.com/openshift/library-go v0.0.0-20250115130726-99ccd53a90da/go.mod h1:Dsex3pPrZ+krgVFZIv21DGzeFvcC0muMvaQe9E/q0uI=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
