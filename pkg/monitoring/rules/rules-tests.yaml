@@ -1,0 +1,242 @@
+# Unit tests for the prometheus rules
+rule_files:
+  - rules.json
+
+group_eval_order:
+  - recordingRules.rules
+  - alerts.rules
+
+tests:
+  # SSPDown alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'up{pod="ssp-operator-12345"}'
+        values: '0x5 1'
+
+    alert_rule_test:
+      - eval_time: "5m"
+        alertname: "SSPDown"
+        exp_alerts:
+          - exp_annotations:
+              summary: "All SSP operator pods are down."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPDown"
+            exp_labels:
+              severity: "critical"
+              operator_health_impact: "critical"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "6m"
+        alertname: "SSPDown"
+        exp_alerts: []
+
+  # SSPTemplateValidatorDown alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'up{pod="virt-template-validator-12345"}'
+        values: '0x5 1'
+
+    alert_rule_test:
+      - eval_time: "5m"
+        alertname: "SSPTemplateValidatorDown"
+        exp_alerts:
+          - exp_annotations:
+              summary: "All Template Validator pods are down."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPTemplateValidatorDown"
+            exp_labels:
+              severity: "critical"
+              operator_health_impact: "critical"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "6m"
+        alertname: "SSPTemplateValidatorDown"
+        exp_alerts: []
+
+  # SSPFailingToReconcile alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'up{pod="ssp-operator-12345"}'
+        values: '0x5 1'
+      - series: 'kubevirt_ssp_operator_reconcile_succeeded{pod="ssp-operator-12345"}'
+        values: '0x11 1'
+
+    alert_rule_test:
+      # SSP pod is down -> should not trigger SSPFailingToReconcile alert
+      - eval_time: "5m"
+        alertname: "SSPFailingToReconcile"
+        exp_alerts: []
+
+      # SSP pod is up, but failed to reconcile
+      - eval_time: "11m"
+        alertname: "SSPFailingToReconcile"
+        exp_alerts:
+          - exp_annotations:
+              summary: "The ssp-operator pod is up but failing to reconcile."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPFailingToReconcile"
+            exp_labels:
+              severity: "critical"
+              operator_health_impact: "critical"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      # SSP pod is up, and reconciliation succeeded
+      - eval_time: "12m"
+        alertname: "SSPFailingToReconcile"
+        exp_alerts: []
+
+  # SSPHighRateRejectedVms alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'kubevirt_ssp_template_validator_rejected_total{pod="virt-template-validator-12345"}'
+        values: '0+1x10 10x120'
+
+    alert_rule_test:
+      - eval_time: "10m"
+        alertname: "SSPHighRateRejectedVms"
+        exp_alerts: []
+
+      - eval_time: "11m"
+        alertname: "SSPHighRateRejectedVms"
+        exp_alerts:
+          - exp_annotations:
+              summary: "High rate of rejected Vms."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPHighRateRejectedVms"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "warning"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      # The alert is triggering for the whole hour, until the window
+      # does not contain the first few values
+      - eval_time: "64m"
+        alertname: "SSPHighRateRejectedVms"
+        exp_alerts:
+          - exp_annotations:
+              summary: "High rate of rejected Vms."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPHighRateRejectedVms"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "warning"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "65m"
+        alertname: "SSPHighRateRejectedVms"
+        exp_alerts: []
+
+  # SSPCommonTemplatesModificationReverted alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'kubevirt_ssp_common_templates_restored_total{pod="ssp-operator-12345"}'
+        values: '0 0 1 0'
+
+    alert_rule_test:
+      - eval_time: "1m"
+        alertname: "SSPCommonTemplatesModificationReverted"
+        exp_alerts: []
+
+      - eval_time: "2m"
+        alertname: "SSPCommonTemplatesModificationReverted"
+        exp_alerts:
+          - exp_annotations:
+              summary: "Common Templates manual modifications were reverted by the operator."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPCommonTemplatesModificationReverted"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "none"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      # The alert is triggering for the whole hour, until the window
+      # does not contain the first few values
+      - eval_time: "61m"
+        alertname: "SSPCommonTemplatesModificationReverted"
+        exp_alerts:
+          - exp_annotations:
+              summary: "Common Templates manual modifications were reverted by the operator."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/SSPCommonTemplatesModificationReverted"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "none"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "62m"
+        alertname: "SSPCommonTemplatesModificationReverted"
+        exp_alerts: []
+
+  # VMStorageClassWarning alert tests
+  - interval: "1m"
+    input_series:
+      - series: 'kubevirt_vmi_info{name="vm1", namespace="ns1", os="windows2k22", guest_os_name="Microsoft Windows"}'
+        values: '1 1 1 0 _'
+      - series: 'kubevirt_vmi_info{name="vm1", namespace="ns1", os="<none>", guest_os_name="Microsoft Windows"}'
+        values: '_ _ _ _ 1 0 _'
+      - series: 'kubevirt_vmi_info{name="vm1", namespace="ns1", os="windows2k22", guest_os_name="<none>"}'
+        values: '_ _ _ _ _ _ 1 0 _'
+      - series: 'kubevirt_vmi_info{name="vm1", namespace="ns1", os="<none>", guest_os_name="<none>"}'
+        values: '_ _ _ _ _ _ _ _ 1 0 _'
+      - series: 'kubevirt_ssp_vm_rbd_block_volume_without_rxbounce{name="vm1", namespace="ns1"}'
+        values: '0 0 1 1 1 1 1 1 1 1 1'
+
+    alert_rule_test:
+      - eval_time: "1m" # VM RDB Block Volume has rxbounce
+        alertname: "VMStorageClassWarning"
+        exp_alerts: []
+
+      - eval_time: "2m" # Both OS and Guest OS are set to Windows
+        alertname: "VMStorageClassWarning"
+        exp_alerts:
+          - exp_annotations:
+              summary: "1 Windows Virtual Machines may cause reports of bad crc/signature errors due to certain I/O patterns."
+              description: "When running Windows VMs using ODF storage with 'rbd' mounter or 'rbd.csi.ceph.com provisioner', VMs may cause reports of bad crc/signature errors due to certain I/O patterns. Cluster performance can be severely degraded if the number of re-transmissions due to crc errors causes network saturation."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "none"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "3m"
+        alertname: "VMStorageClassWarning"
+        exp_alerts: []
+
+      - eval_time: "4m" # Guest OS is set to Windows
+        alertname: "VMStorageClassWarning"
+        exp_alerts:
+          - exp_annotations:
+              summary: "1 Windows Virtual Machines may cause reports of bad crc/signature errors due to certain I/O patterns."
+              description: "When running Windows VMs using ODF storage with 'rbd' mounter or 'rbd.csi.ceph.com provisioner', VMs may cause reports of bad crc/signature errors due to certain I/O patterns. Cluster performance can be severely degraded if the number of re-transmissions due to crc errors causes network saturation."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "none"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "5m"
+        alertname: "VMStorageClassWarning"
+        exp_alerts: []
+
+      - eval_time: "6m" # OS is set to Windows
+        alertname: "VMStorageClassWarning"
+        exp_alerts:
+          - exp_annotations:
+              summary: "1 Windows Virtual Machines may cause reports of bad crc/signature errors due to certain I/O patterns."
+              description: "When running Windows VMs using ODF storage with 'rbd' mounter or 'rbd.csi.ceph.com provisioner', VMs may cause reports of bad crc/signature errors due to certain I/O patterns. Cluster performance can be severely degraded if the number of re-transmissions due to crc errors causes network saturation."
+              runbook_url: "https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning"
+            exp_labels:
+              severity: "warning"
+              operator_health_impact: "none"
+              kubernetes_operator_part_of: "kubevirt"
+              kubernetes_operator_component: "ssp-operator"
+
+      - eval_time: "7m"
+        alertname: "VMStorageClassWarning"
+        exp_alerts: []
+
+      - eval_time: "8m" # Neither OS nor Guest OS is set to Windows
+        alertname: "VMStorageClassWarning"
+        exp_alerts: [ ]
