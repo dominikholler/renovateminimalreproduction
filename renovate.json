@@ -1,4 +1,19 @@
 {
-  "prConcurrentLimit": 0,
-  "prHourlyLimit": 0
+    "prConcurrentLimit": 0,
+    "prHourlyLimit": 0,
+    "groupName": "all dependencies",
+    "groupSlug": "all",
+    "lockFileMaintenance": {
+        "enabled": false
+    },
+    "packageRules": [
+        {
+            "groupName": "all dependencies",
+            "groupSlug": "all",
+            "matchBaseBranches": ["main"],
+            "matchPackagePatterns": [
+                "*"
+            ]
+        }
+    ]
 }
