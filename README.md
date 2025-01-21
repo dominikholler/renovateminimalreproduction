@@ -1,17 +1,18 @@
 # minimal-reproduction-template
 
-First, read the [Renovate minimal reproduction instructions](https://github.com/renovatebot/renovate/blob/main/docs/development/minimal-reproductions.md).
-
-Then replace the current `h1` with the Renovate Issue/Discussion number.
+https://github.com/renovatebot/renovate/discussions/33596
 
 ## Current behavior
 
-Explain the current behavior here.
+Invalid updates like
+https://github.com/dominikholler/renovateminimalreproduction/pull/10/files
+or
+https://github.com/dominikholler/ssp-operator/commit/e554a8d5df875ad40ad95a495d50e9e7d82e0780#r151256912
 
 ## Expected behavior
 
-Explain the expected behavior here.
+renovate to produce valid updates of go.mod
 
 ## Link to the Renovate issue or Discussion
 
-Put your link to the Renovate issue or Discussion here.
+https://github.com/renovatebot/renovate/discussions/33596
