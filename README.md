@@ -1,4 +1,4 @@
-# minimal-reproduction-template
+# 33596
 
 https://github.com/renovatebot/renovate/discussions/33596
 
